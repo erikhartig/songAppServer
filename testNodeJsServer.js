@@ -62,9 +62,28 @@ router.route('/users')
             res.status(200)
             res.send(req.body.username);
          });
-   })
+   });
 
-   .get(function(req, res) {
+
+router.route('/search')
+
+   .post(function(req, res) {
+      verifyLogin(req.header.sessionId);
+      //TO-DO get spotify authorization token and add it as a header field
+      var q = req.body.searchTerm;
+      q = "track:" + q.replace(/^[ ]*$/, "%20");
+      var type = "type=track";
+      var url = "https://api.spotify.com/v1/search?" + q + "&" + type;
+      var options = {
+         url: url,
+         method: "GET",
+         headers: {
+            'Authorization': 'Basic ' + fullEncodedAuth
+         }
+      }
+      request.get(options, function(err, response, body) {
+         //TO-DO parse returned data
+      });
 
    });
 
@@ -73,14 +92,14 @@ router.route('/songs')
    .post(function(req, res) {
       console.log(req.get("Session-Id"));
       verifyLogin(req.header.sessionId);
-      verifyString(req.body.songname);
-      verifyString(req.body.artistName);
+      verifyString(req.body.spotifyId);
       verifyString(req.body.playlistId);
+      //get info from spotify
       con.query("INSERT INTO songs (song_name, artist_name, playlist_id) VALUES ( '" + req.body.songName + "', '" + req.body.artistName + "', ? )", req.body.playlistId, function(err, result, fields) {
          if (err) throw err;
          res.end(JSON.stringify(req.body));
       });
-   })
+   });
 
    .get(function(req, res) {
       console.log("here");
@@ -108,7 +127,7 @@ router.route('/users/spotify')
 
       verifyString(req.params.code);
       var options = {
-         url: 'https://api.github.com/repos/request/request',
+         url: 'https://api.spotify.com/v1',//TO-DO Fix this url
          method: "POST",
          headers: {
             'Authorization': 'Basic ' + fullEncodedAuth
@@ -119,7 +138,6 @@ router.route('/users/spotify')
             'redirect_uri': req.params.redirectUri
          }
       }
-
       request.post(options, function(err, response, body) {});
    });
 
@@ -201,12 +219,9 @@ router.route('/playlist/:id')
       });
    });
 
-
 app.use('/api', router);
-
 app.listen(port);
 console.log('Magic happens on port ' + port);
-
 
 //
 // const options = {
@@ -226,8 +241,7 @@ function verifyLogin(sessionId) {
       } else {
          throw 'Session id is invalid';
       }
-   })
-
+   });
 }
 
 function verifyString(str) {
