@@ -99,7 +99,7 @@ router.route('/songs')
          if (err) throw err;
          res.end(JSON.stringify(req.body));
       });
-   });
+   })
 
    .get(function(req, res) {
       console.log("here");
