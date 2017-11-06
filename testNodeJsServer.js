@@ -5,6 +5,7 @@ var express = require('express');
 var request = require('request');
 var sjcl = require('sjcl');
 var bodyParser = require('body-parser');
+const searchForTracks = require('./search_for_track.js');
 
 var app = express();
 
@@ -81,10 +82,26 @@ router.route('/search')
             'Authorization': 'Basic ' + fullEncodedAuth
          }
       }
-      request.get(options, function(err, response, body) {
-         //TO-DO parse returned data
-      });
+   });
 
+router.route('/search/:name')
+
+   .get(function(req, res){
+      verifyString(req.params.name);
+      var songs = searchForTracks.search(req.params.name);
+      console.log(songs);
+      var results = songs.tracks.items;
+      for (i = 0; i < results.length; i++) {
+         var song = results[i];
+         var test = {
+            "img" : song.album.images[2].url,
+            "name" : song.name,
+            "artist" : song.artists[0].name,
+            "id" : song.id
+         };
+         songs.push(test);
+      }
+      console.log(songs);
    });
 
 router.route('/songs')
