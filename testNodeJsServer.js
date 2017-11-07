@@ -112,9 +112,10 @@ router.route('/songs')
       verifyString(req.body.spotifyId);
       verifyString(req.body.playlistId);
       //get info from spotify
-      con.query("INSERT INTO songs (song_name, artist_name, playlist_id) VALUES ( '" + req.body.songName + "', '" + req.body.artistName + "', ? )", req.body.playlistId, function(err, result, fields) {
+      con.query("INSERT INTO songs (song_name, artist_name, spotify_id, image_url, score, playlist_id) VALUES (?, ?, ?, ?, 0, ?)",
+      [req.body.songName, req.body.artistName, req.body.spotifyId, req.body.imageUrl, req.body.playlistId], function(err, result, fields) {
          if (err) throw err;
-         res.end(JSON.stringify(req.body));
+         res.end(JSON.stringify(req.body));//remove after testing
       });
    })
 
