@@ -1,6 +1,13 @@
 var request = require('request');
 var bodyParser = require('body-parser');
 
+app.use(bodyParser.urlencoded({
+   extended: true
+}));
+app.use(bodyParser.json({
+   type: 'application/json'
+}));
+
 voteForSong("test", "JCO0MW", "1");
 
 //Note song should contain the plain text name of the song, playlist should contain
