@@ -44,23 +44,23 @@ router.get('/', function(req, res) {
 router.route('/vote')
 
    .put(function(req, res) {
-
-      con.query("SELECT FROM songs WHERE playlist_id = ? AND song_name = ?", [req.body.playlistId, req.body.songName], function(err, result, fields) {
-         if (err) throw error;
-         if (req.body.vote == 1) {
-            result.vote = result.vote + 1;
-         } else if (req.body.vote == 0) {
-            result.vote = result.vote - 1;
-         } else {
-            res.status(400);
-            res.send("invalid vote number");
-            throw "invalid vote number";
-         }
-
-         con.query("UPDATE songs SET vote=? WHERE id=?", [result.vote, result.id], function(err, result, fields) {
+      con.query("SELECT id FROM playlists WHERE code_word=?", req.body.playlist, function(err, result, fields) {
+         con.query("SELECT id, score FROM songs WHERE playlist_id = ? AND song_name = ?", [result[0].id, req.body.songName], function(err, result, fields) {
             if (err) throw error;
-            res.status(200);
-            res.end();
+            if (req.body.vote == 1) {
+               result[0].score = result[0].score + 1;
+            } else if (req.body.vote == 0) {
+               result[0].score = result[0].score - 1;
+            } else {
+               res.status(400);
+               res.send("invalid vote number");
+               throw "invalid vote number";
+            }
+            con.query("UPDATE songs SET score=? WHERE id=?", [result[0].score, result[0].id], function(err, result, fields) {
+               if (err) throw error;
+               res.status(200);
+               res.end();
+            });
          });
       });
    });
@@ -69,7 +69,6 @@ router.route('/search/:name')
 
    .get(function(req, res) {
       var songs = searchForTracks.search(req.params.name);
-      console.log(songs);
       var results = songs.tracks.items;
       for (i = 0; i < results.length; i++) {
          var song = results[i];
