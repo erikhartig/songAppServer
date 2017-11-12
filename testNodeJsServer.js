@@ -68,19 +68,7 @@ router.route('/vote')
 router.route('/search/:name')
 
    .get(function(req, res) {
-      var songs = searchForTracks.search(req.params.name);
-      var results = songs.tracks.items;
-      for (i = 0; i < results.length; i++) {
-         var song = results[i];
-         var test = {
-            "img": song.album.images[2].url,
-            "name": song.name,
-            "artist": song.artists[0].name,
-            "id": song.id
-         };
-         songs.push(test);
-      }
-      console.log(songs);
+      searchForTracks.search(req.params.name, res);
    });
 
 router.route('/songs')
