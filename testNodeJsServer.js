@@ -74,10 +74,10 @@ router.route('/search/:name')
 router.route('/songs')
 
    .post(function(req, res) {
-      console.log(req.get("Session-Id"));
-      verifyLogin(req.header.sessionId);
+      //console.log(req.get("Session-Id"));
+      //verifyLogin(req.header.sessionId);
       //get info from spotify
-      con.query("INSERT INTO songs (song_name, artist_name, spotify_id, image_url, score, playlist_id) VALUES (?, ?, ?, ?, 0, ?)", [req.body.songName, req.body.artistName, req.body.spotifyId, req.body.imageUrl, req.body.playlistId], function(err, result, fields) {
+      con.query("INSERT INTO songs (song_name, artist_name, spotify_id, image_url, score, playlist_id) VALUES (?, ?, ?, ?, 0, ?)", [req.body.title, req.body.artist, req.body.id, req.body.url, req.body.playlistId], function(err, result, fields) {
          if (err) throw err;
          res.end(JSON.stringify(req.body)); //remove after testing
       });
