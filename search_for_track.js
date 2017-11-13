@@ -1,4 +1,4 @@
-/* 
+/*
  * Search Function for SquadJam Mobile App
  * Author: Raphael Wieland
  * Date: 11/10/2017
@@ -18,13 +18,14 @@ var spoClientKey = fs.readFileSync("spo_client_key.txt", {
       });
 
 /* Search Function
- * Prerequisits: spotifyClientID and SpotifyClientKey must be saved in files names spo_client_id.txt and spo_client_key.txt respectively within the same directory. 
+ * Prerequisits: spotifyClientID and SpotifyClientKey must be saved in files names spo_client_id.txt and spo_client_key.txt respectively within the same directory.
  * Inputs: a search query string (you can search by title by preappending "title:" to the query or by artist by preappending "artist:" to the query.), the router's res object.
  * Outputs: ends the res object passed in by setting the status and sending the search entries JSON object.
  * Catches: catches if clientCredentialGrant() or searchTracks() promise rejects and responds with the correct status codes.
  */
-function search(query, res){
-    
+module.exports = {
+   search: function(query, res){
+
     //create new SpotifyWebApi wrapper object with clientID and clientKey
     var spotifyApi = new SpotifyWebApi({
     clientId : spoClientId,
@@ -46,11 +47,11 @@ function search(query, res){
       }).then(function(data){
             // initialize an instance variable to the correct part of the returned search results.
             var spotifyResults = data.body.tracks.items;
-            // create new entries object which starts as an empty array 
+            // create new entries object which starts as an empty array
             var results = {"entries":[]};
-            // for each entry in the search results, 
+            // for each entry in the search results,
             for(i = 0; i < spotifyResults.length; i++){
-                var song = spotifyResults[i]; 
+                var song = spotifyResults[i];
                 // create a new entry object
                 var entry = {
                     "title":song.name,
@@ -73,8 +74,9 @@ function search(query, res){
             // sendStatus to client
             res.sendStatus(400);
         });
-    
-};
+
+     }
+  };
 
 // Example call to the search function
 // search("queen",null);

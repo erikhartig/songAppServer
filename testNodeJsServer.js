@@ -71,24 +71,34 @@ router.route('/search/:name')
       searchForTracks.search(req.params.name, res);
    });
 
+router.route('/songs/:playlistId')
+
+.get(function(req, res) {
+   //verifyLogin(req.get("Session-Id"));
+   console.log("finding songs");
+   con.query("SELECT id FROM playlists where code_word=?", req.params.playlistId, function(err, result, fields){
+      if(err) throw err;
+      con.query("SELECT * FROM songs where playlist_id=?", result[0].id, function(err, result, fields) {
+         if (err) throw err;
+         res.status(200);
+         res.send(result);
+      });
+   });
+});
+
 router.route('/songs')
+
+   .get(function(req, res) {
+      res.send("Hello World");
+   })
 
    .post(function(req, res) {
       //console.log(req.get("Session-Id"));
       //verifyLogin(req.header.sessionId);
       //get info from spotify
-      con.query("INSERT INTO songs (song_name, artist_name, spotify_id, image_url, score, playlist_id) VALUES (?, ?, ?, ?, 0, ?)", [req.body.title, req.body.artist, req.body.id, req.body.url, req.body.playlistId], function(err, result, fields) {
+      con.query("INSERT INTO songs (song_name, artist_name, spotify_id, image_url, score, playlist_id) VALUES (?, ?, ?, ?, 0, ?)", [req.body.title, req.body.artist, req.body.spotifyId, req.body.url, req.body.playlistId], function(err, result, fields) {
          if (err) throw err;
-         res.end(JSON.stringify(req.body)); //remove after testing
-      });
-   })
-
-   .get(function(req, res) {
-      verifyLogin(req.get("Session-Id"));
-      con.query("SELECT * FROM songs where playlist_id=?", req.body.playlistId, function(err, result, fields) {
-         if (err) throw err;
-         res.status(200);
-         res.end(JSON.stringify(result));
+         res.send(JSON.stringify(req.body)); //remove after testing
       });
    });
 
