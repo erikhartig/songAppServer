@@ -76,19 +76,19 @@ router.route('/songs/:playlistId')
 	.get(function(req, res) {
 	   //verifyLogin(req.get("Session-Id"));
 	   //console.log("finding songs");
-	   //con.query("SELECT id FROM playlists where code_word=?", req.params.playlistId, function(err, result, fields){
-	  //if(err) throw err;
-	  var playlistID = getPlaylistFromCode(playlistId);
-	  con.query("SELECT * FROM songs where playlist_id=?", playlistID, function(err, result, fields) {
-		if (err){
-			res.sendStatus(500);
-			throw err;
-		}else{
-			res.status(200);
-			res.send(result);
-		}
-	});
-   //});
+	   con.query("SELECT id FROM playlists where code_word=?", req.params.playlistId, function(err, result, fields){
+	  	if(err) throw err;
+	  	//var playlistID = getPlaylistFromCode(req.params.playlistId);
+	  	con.query("SELECT * FROM songs where playlist_id=?", playlistID, function(err, result, fields) {
+			if (err){
+				res.sendStatus(500);
+				throw err;
+			}else{
+				res.status(200);
+				res.send(result);
+			}
+		});
+	   });
 });
 
 router.route('/songs')
