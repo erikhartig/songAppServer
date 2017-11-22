@@ -53,7 +53,7 @@ router.get('/', function(req, res) {
 router.route('/vote')
 
    .put(function(req, res) {
-      con.query("SELECT id FROM playlists WHERE code_word=?", req.body.playlist, function(err, result, fields) {
+      con.query("SELECT id FROM playlists WHERE code_word=?", req.body.playlist, function(err, result) {
          con.query("SELECT id, score FROM songs WHERE playlist_id = ? AND song_name = ?", [result[0].id, req.body.songName], function(err, result, fields) {
             if (err) throw error;
             if (req.body.vote == 1) {
@@ -81,32 +81,44 @@ router.route('/search/:name')
       searchForTracks.search(req.params.name, res);
    });
 
+
 //returns all the songs for a given playlist
 router.route('/songs/:playlistId')
-
-.get(function(req, res) {
-   //verifyLogin(req.get("Session-Id"));
-   console.log("finding songs");
-   con.query("SELECT id FROM playlists where code_word=?", req.params.playlistId, function(err, result, fields){
-      if(err) throw err;
-      con.query("SELECT * FROM songs where playlist_id=?", result[0].id, function(err, result, fields) {
-         if (err) throw err;
-         res.status(200);
-         res.send(result);
-      });
-   });
+	.get(function(req, res) {
+	   //verifyLogin(req.get("Session-Id"));
+	   //console.log("finding songs");
+	   con.query("SELECT id FROM playlists where code_word=?", req.params.playlistId, function(err, result, fields){
+	  	if(err) throw err;
+	  	//var playlistID = getPlaylistFromCode(req.params.playlistId);
+	  	con.query("SELECT * FROM songs where playlist_id=?", playlistID, function(err, result, fields) {
+			if (err){
+				res.sendStatus(500);
+				throw err;
+			}else{
+				res.status(200);
+				res.send(result);
+			}
+		});
+	   });
 });
 
 //Allows for the adding of new songs through a post request
 router.route('/songs')
 
    .post(function(req, res) {
-      //console.log(req.get("Session-Id"));
-      //verifyLogin(req.header.sessionId);
-      //get info from spotify
-      con.query("INSERT INTO songs (song_name, artist_name, spotify_id, image_url, score, playlist_id) VALUES (?, ?, ?, ?, 0, ?)", [req.body.title, req.body.artist, req.body.spotifyId, req.body.url, req.body.playlistId], function(err, result, fields) {
-         if (err) throw err;
-         res.send(JSON.stringify(req.body)); //remove after testing
+
+      // Get playlist ID from playlist code
+	  var playlistID = getPlaylistFromCode(req.body.playlist);
+	  // Add song to playlist
+      con.query("INSERT INTO songs (song_name, artist_name, spotify_id, image_url, score, playlist_id) VALUES (?, ?, ?, ?, 0, ?)", [req.body.title, req.body.artist, req.body.spotifyId, req.body.url, playlistID], function(err, result, fields) {
+         if (err){
+			 // FAILURE
+			 res.sendStatus(500);
+			 throw err;
+		 }else{
+			 // SUCCESS
+			res.sendStatus(200);
+		 }
       });
    });
 
@@ -206,6 +218,7 @@ router.route('/login')
       });
    });
 
+
 //Allows for the creation of a new playlist
 router.route('/playlist')
 
@@ -275,4 +288,20 @@ function verifyString(str) {
    if (/^[a-zA-Z0-9- ]*$/.test(str) == false) {
       throw 'Contains invalid characters';
    }
+}
+
+/*
+ *	Function to get playlist ID from playlist code.
+ * 	Input:  A string of the playlist's secret code.
+ *	Output: Returns the corresponding playlist ID
+ *
+ */
+function getPlaylistFromCode(code){
+	con.query("SELECT id FROM playlists WHERE code_word=?", code, function(err, result) {
+		if(err){
+			throw "Couldn't find playlist ID ?, Error: ?", code, err;
+		}else{
+			return result[0].id;
+		}
+	});
 }
