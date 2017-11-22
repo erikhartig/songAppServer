@@ -116,7 +116,7 @@ router.route('/songs')
 		 }
       });
    });
-/*
+
 router.route('/users/spotify')
 
    .post(function(req, res) {
@@ -208,7 +208,7 @@ router.route('/login')
          }
       });
    });
-   */
+   
 
 router.route('/playlist')
 
