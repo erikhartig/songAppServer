@@ -1,3 +1,9 @@
+/*
+Author: Erik Hartig
+Date: 11/15/17
+Code that creates a node js web server that implements a restful api
+**/
+
 const https = require('https');
 const fs = require('fs');
 var mysql = require('mysql');
@@ -8,7 +14,7 @@ var bodyParser = require('body-parser');
 const searchForTracks = require('./search_for_track.js');
 
 var app = express();
-
+//creates a connection object to allow access to the database
 var con = mysql.createConnection({
    host: "localhost",
    user: "root",
@@ -16,6 +22,7 @@ var con = mysql.createConnection({
    database: "songapp"
 });
 
+//creating settings for the http body parser
 app.use(bodyParser.urlencoded({
    extended: true
 }));
@@ -23,7 +30,8 @@ app.use(bodyParser.json({
    type: 'application/json'
 }));
 
-var port = process.env.PORT || 8000;
+//setting up the port and routing information
+var port = process.env.PORT || 80;
 var router = express.Router();
 
 router.use(function(req, res, next) {
@@ -32,6 +40,7 @@ router.use(function(req, res, next) {
    next(); // make sure we go to the next routes and don't stop here
 });
 
+//A basic test function that can be used to see if the api is functioning
 router.get('/', function(req, res) {
    res.json({
       message: 'hooray! welcome to our api!'
@@ -40,7 +49,7 @@ router.get('/', function(req, res) {
 
 
 
-
+//This route allows for put request to do voting, needs a playlist id, a song name, and a value of 1 for a vote for or 0 for a vote against
 router.route('/vote')
 
    .put(function(req, res) {
@@ -65,12 +74,14 @@ router.route('/vote')
       });
    });
 
+//calls the search function by taking a name at the end of the http request
 router.route('/search/:name')
 
    .get(function(req, res) {
       searchForTracks.search(req.params.name, res);
    });
 
+//returns all the songs for a given playlist
 router.route('/songs/:playlistId')
 
 .get(function(req, res) {
@@ -86,11 +97,8 @@ router.route('/songs/:playlistId')
    });
 });
 
+//Allows for the adding of new songs through a post request
 router.route('/songs')
-
-   .get(function(req, res) {
-      res.send("Hello World");
-   })
 
    .post(function(req, res) {
       //console.log(req.get("Session-Id"));
@@ -102,6 +110,7 @@ router.route('/songs')
       });
    });
 
+//unused: allow sthe user to link a spotify account with their account, ended up not being used due to certain features being dropped.
 router.route('/users/spotify')
 
    .post(function(req, res) {
@@ -129,12 +138,13 @@ router.route('/users/spotify')
             'redirect_uri': req.params.redirectUri
          }
       }
-      request.post(options, function(err, response, body) {});
    });
 
+//Allows the creating of a new user through a post request
 router.route('/users')
 
    .post(function(req, res) {
+      console.log("user being created");
       if (!(req.body.username != "" && req.body.password != "")) {
          alert('username or password is empty');
          throw 'username or password is empty';
@@ -153,6 +163,7 @@ router.route('/users')
    });
 
 
+//allows a user to logout by passing a session id
 router.route('/login/:id')
 
    .delete(function(req, res) {
@@ -163,6 +174,7 @@ router.route('/login/:id')
       });
    });
 
+//Allows a user to login and returns a session id
 router.route('/login')
 
    .post(function(req, res) {
@@ -184,7 +196,7 @@ router.route('/login')
             con.query("INSERT INTO sessions (id, user_id) VALUES (?, ?)", [sessionIdHex, result[0].id], function(err, result, fields) {
                if (err) throw err;
                res.status(200);
-               res.end(String(sessionIdHex));
+               res.send(String(sessionIdHex));
             }); //add fields for refresh token token and refresh time
          } else {
             res.status(400);
@@ -194,6 +206,7 @@ router.route('/login')
       });
    });
 
+//Allows for the creation of a new playlist
 router.route('/playlist')
 
    .post(function(req, res) {
@@ -215,6 +228,7 @@ router.route('/playlist')
       });
    });
 
+//Allows the app to delete a playlist
 router.route('/playlist/:id')
 
    .delete(function(req, res) {
@@ -233,12 +247,14 @@ app.use('/api', router);
 app.listen(port);
 console.log('Magic happens on port ' + port);
 
+//code necessary for https not used because we decided not to use https
 //
 // const options = {
 //    key: fs.readFileSync('server-key.pem'),
 //    cert: fs.readFileSync('server-cert.pem')
 // };
 
+//checks to see if the user provided session id is valid
 function verifyLogin(sessionId) {
    verifyString(sessionId);
    var sql = "select * from sessions where id = ?";
@@ -254,6 +270,7 @@ function verifyLogin(sessionId) {
    });
 }
 
+//checks to see if a string contains invalid characters
 function verifyString(str) {
    if (/^[a-zA-Z0-9- ]*$/.test(str) == false) {
       throw 'Contains invalid characters';
